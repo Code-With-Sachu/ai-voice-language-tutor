@@ -4,36 +4,60 @@ Configuration and constants for the AI Voice Language Tutor.
 
 import os
 
-# Load .env file if python-dotenv is available (local dev convenience).
+# Load .env file for local development
 try:
     from dotenv import load_dotenv
     load_dotenv()
 except ImportError:
     pass
 
+
 # ---------------------------------------------------------------------------
 # API configuration
 # ---------------------------------------------------------------------------
+
+# First, try environment variables
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 
-TRANSCRIPTION_MODEL = "whisper-1"     # OpenAI Whisper API model
-FEEDBACK_MODEL = "gpt-4o-mini"        # For grammar/vocab feedback + correction
+# If running on Streamlit Cloud, try Streamlit Secrets
+if not OPENAI_API_KEY:
+    try:
+        import streamlit as st
+        OPENAI_API_KEY = st.secrets.get("OPENAI_API_KEY", "")
+    except Exception:
+        pass
+
+
+# Models
+TRANSCRIPTION_MODEL = "whisper-1"
+FEEDBACK_MODEL = "gpt-4o-mini"
+
 
 # ---------------------------------------------------------------------------
 # App settings
 # ---------------------------------------------------------------------------
+
 APP_TITLE = "🗣️ AI Voice Language Tutor"
+
 APP_DESCRIPTION = (
     "Speak a sentence in the language you're learning. The tutor transcribes it, "
     "checks your grammar and word choice, and reads back the corrected version."
 )
 
 MAX_FILE_SIZE_MB = 25
-SUPPORTED_FORMATS = ["mp3", "mp4", "mpeg", "mpga", "m4a", "wav", "webm"]
+
+SUPPORTED_FORMATS = [
+    "mp3",
+    "mp4",
+    "mpeg",
+    "mpga",
+    "m4a",
+    "wav",
+    "webm",
+]
+
 
 # Target languages the learner can practice.
-# gtts_code: language code used by gTTS for reading the correction aloud.
-# whisper_hint: passed to Whisper as a language hint to improve transcription accuracy.
 SUPPORTED_LANGUAGES = {
     "Spanish": {"gtts_code": "es", "whisper_hint": "es"},
     "French": {"gtts_code": "fr", "whisper_hint": "fr"},
@@ -49,5 +73,5 @@ DEFAULT_LANGUAGE = "Spanish"
 
 
 def keys_configured() -> bool:
-    """Returns True if the OpenAI API key is set."""
+    """Returns True if the OpenAI API key is configured."""
     return bool(OPENAI_API_KEY)
